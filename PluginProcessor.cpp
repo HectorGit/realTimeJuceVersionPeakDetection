@@ -168,7 +168,7 @@ void PluginCloneForGuitarAudioProcessor::processBlock(AudioSampleBuffer& buffer,
 		cout << "processing !" << endl;
 		rolling_average_decrease = alpha_decr*(rolling_average_decrease)+(1 - alpha_decr)*(current_rms);
 
-		if (current_rms < rolling_average_decrease) {
+		if (current_rms < rolling_average_decrease && current_rms < 0.1) {
 			processing = false;
 			not_processing = true; // unnecessary
 			rolling_average_decrease = 0.0;
@@ -228,7 +228,7 @@ void PluginCloneForGuitarAudioProcessor::processBlock(AudioSampleBuffer& buffer,
 		cout << "not processing !" << endl;
 		rolling_average_increase = alpha_incr*(rolling_average_increase)+(1 - alpha_incr)*(current_rms);
 
-		if (current_rms > rolling_average_increase) {
+		if (current_rms > rolling_average_increase && current_rms >0.1){
 			processing = true;
 			not_processing = false; //unnecessary
 			rolling_average_increase = 0.0; //reset - should it be this harsh?
