@@ -38,6 +38,9 @@ PluginCloneForGuitarAudioProcessor::PluginCloneForGuitarAudioProcessor()
 	alpha_decr = 0.25;
 	not_processing = true;
 	processing = false;
+	rolling_classification = 0;
+	classificationCounters = new Vector<int>(3); //will hold the count for the intermediate classifications.
+								//how can we reset this to zero?
 }
 
 PluginCloneForGuitarAudioProcessor::~PluginCloneForGuitarAudioProcessor()
@@ -167,14 +170,41 @@ void PluginCloneForGuitarAudioProcessor::processBlock(AudioSampleBuffer& buffer,
 	if (processing) {
 		cout << "processing !" << endl;
 		rolling_average_decrease = alpha_decr*(rolling_average_decrease)+(1 - alpha_decr)*(current_rms);
+		rolling_classification = classificationCounters->calculate_maximal_index(); //didn't give problem
+																					//cool
 
 		if (current_rms < rolling_average_decrease && current_rms < 0.1) {
+			
+			if (rolling_classification == 0) {
+				cout << "classif == 0" << endl;
+				marsyasPlayerNet->setSoundFileName("center.wav");
+				marsyasPlayerNet->playSound();
+			}
+			else if (rolling_classification == 1) {
+				cout << "classif == 1" << endl;
+				marsyasPlayerNet->setSoundFileName("halfedge.wav");
+				marsyasPlayerNet->playSound();
+			}
+			else if (rolling_classification == 2) {
+				cout << "classif == 2" << endl;
+				marsyasPlayerNet->setSoundFileName("rimshot.wav");
+				marsyasPlayerNet->playSound();
+			}
+			else {
+				//nothing
+			}
+			//reset everything
+			classificationCounters->initialize(0); 
+			rolling_classification = 0; 
 			processing = false;
-			not_processing = true; // unnecessary
+			not_processing = true; 
 			rolling_average_decrease = 0.0;
+		
 		}
 		else {
-
+			//accumulate a value for the classification...
+			//add to a counter of that type of classification [i,j,k] and then 
+			//once the 
 
 			cout << "running detection " << endl;
 			marsyasRealtime->runDetection2(buffer.getReadPointer(0), buffer.getNumSamples()); //this gets 
@@ -202,19 +232,19 @@ void PluginCloneForGuitarAudioProcessor::processBlock(AudioSampleBuffer& buffer,
 			else {
 				cout << "Above Threshold" << endl;
 				if (classificationIndex == 0) {
-					cout << "classif == 0" << endl;
-					marsyasPlayerNet->setSoundFileName("center.wav");
-					marsyasPlayerNet->playSound();
+					//add to the counter of this classification
+					//classificationCounters->at(0) += 1;
+					classificationCounters[0] += 1;
 				}
 				else if (classificationIndex == 1) {
-					cout << "classif == 1" << endl;
-					marsyasPlayerNet->setSoundFileName("halfedge.wav");
-					marsyasPlayerNet->playSound();
+					//add to the counter of this classification
+					//classificationCounters->at(1) += 1;
+					classificationCounters[1] += 1;
 				}
 				else if (classificationIndex == 2) {
-					cout << "classif == 2" << endl;
-					marsyasPlayerNet->setSoundFileName("rimshot.wav");
-					marsyasPlayerNet->playSound();
+					//add to the counter of this classification
+					//classificationCounters->at(2) += 1;
+					classificationCounters[2] += 1;
 				}
 				else {
 					//nothing

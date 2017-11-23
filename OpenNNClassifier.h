@@ -26,7 +26,7 @@
 ////#include "tests/*.h"
 //#include "variables.h"
 ////#include "statistics.h"
-//using namespace OpenNN;
+using namespace OpenNN;
 using namespace std;
 
 class OpenNNClassifier {
